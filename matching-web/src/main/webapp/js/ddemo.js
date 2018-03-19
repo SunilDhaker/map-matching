@@ -33,19 +33,19 @@ function setup(map, mmClient) {
         reader.onload = function (e) {
             var content = e.target.result;
 
-        //    var dom = (new DOMParser()).parseFromString(content, 'text/xml');
-//            var pathOriginal = toGeoJSON.gpx(dom);
-               //
-               //            routeLayer.clearLayers();
-               //            if (pathOriginal.features[0]) {
-               //
-               //                pathOriginal.features[0].properties = {style: {color: "black", weight: 2, opacity: 0.9}};
-               //                routeLayer.addData(pathOriginal);
-               //                $("#map-matching-response").text("calculate route match ...");
-               //                $("#map-matching-error").text("");
-               //            } else {
-               //                $("#map-matching-error").text("Cannot display original gpx file. No trk/trkseg/trkpt elements found?");
-               //            }
+            var dom = (new DOMParser()).parseFromString(content, 'text/xml');
+            var pathOriginal = toGeoJSON.gpx(dom);
+
+            routeLayer.clearLayers();
+            if (pathOriginal.features[0]) {
+
+                pathOriginal.features[0].properties = {style: {color: "black", weight: 2, opacity: 0.9}};
+                routeLayer.addData(pathOriginal);
+                $("#map-matching-response").text("calculate route match ...");
+                $("#map-matching-error").text("");
+            } else {
+                $("#map-matching-error").text("Cannot display original gpx file. No trk/trkseg/trkpt elements found?");
+            }
 
             var vehicle = $("#vehicle-input").val();
             if (!vehicle)
@@ -121,7 +121,7 @@ GraphHopperMapMatching.prototype.doRequest = function (content, callback, reqArg
     $.ajax({
         timeout: 20000,
         url: url,
-        contentType: "application/json",
+        contentType: "application/xml",
         type: "POST",
         data: content
     }).done(function (json) {

@@ -76,6 +76,7 @@ public class MatchServlet extends GraphHopperServlet {
         if (contentType.contains("application/xml") || contentType.contains("application/gpx+xml")) {
             inType = "gpx";
         } else if (contentType.contains("application/json")) {
+		System.out.println("in type json");
             inType = "json";
         }
 
@@ -180,7 +181,7 @@ public class MatchServlet extends GraphHopperServlet {
             rsp.add(matchGHRsp);
             Map<String, Object> map = routeSerializer.toJSON(rsp, true, pointsEncoded,
                 enableElevation, enableInstructions);
-
+ map.remove("info");
             if (rsp.hasErrors()) {
                 writeJsonError(httpRes, SC_BAD_REQUEST, objectMapper.convertValue(map, JsonNode.class));
             } else {
@@ -194,6 +195,7 @@ public class MatchServlet extends GraphHopperServlet {
                 matchResult.put("original_distance", matchRsp.getGpxEntriesLength());
                 matchResult.put("original_time", matchRsp.getGpxEntriesMillis());
                 map.put("map_matching", matchResult);
+                map.put("points" , matchGHRsp.getPoints().toGeoJson());
 
                 if (enableTraversalKeys) {
                     // encode edges as traversal keys which includes orientation
