@@ -94,7 +94,7 @@ function setup(map, mmClient) {
 }
 
 GraphHopperMapMatching = function (args) {
-    this.host = "http://35.193.100.159:8989/";
+    this.host = window.location.origin + "/";
     this.basePath = "match";
     this.vehicle = "car";
     this.gps_accuracy = 20;

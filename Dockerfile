@@ -25,4 +25,4 @@ RUN ls
 RUN ./map-matching.sh action=import datasource=/india-latest.osm.pbf vehicle=car
 
 
-CMD sh ./map-matching.sh  action=start-server
+CMD ./map-matching.sh  action=start-server

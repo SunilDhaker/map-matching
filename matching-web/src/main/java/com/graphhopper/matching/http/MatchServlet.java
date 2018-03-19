@@ -27,6 +27,7 @@ import com.graphhopper.matching.EdgeMatch;
 import com.graphhopper.matching.GPXFile;
 import com.graphhopper.matching.MapMatching;
 import com.graphhopper.matching.MatchResult;
+import com.graphhopper.matching.OnlinePolylineEncoder;
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.util.HintsMap;
@@ -76,7 +77,10 @@ public class MatchServlet extends GraphHopperServlet {
         if (contentType.contains("application/xml") || contentType.contains("application/gpx+xml")) {
             inType = "gpx";
         } else if (contentType.contains("application/json")) {
-		System.out.println("in type json");
+		        System.out.println("in type json");
+            inType = "json";
+        } else if (contentType.contains("text/plain")) {
+            System.out.println("in type textPlain");
             inType = "json";
         }
 
@@ -181,7 +185,7 @@ public class MatchServlet extends GraphHopperServlet {
             rsp.add(matchGHRsp);
             Map<String, Object> map = routeSerializer.toJSON(rsp, true, pointsEncoded,
                 enableElevation, enableInstructions);
- map.remove("info");
+           map.remove("info");
             if (rsp.hasErrors()) {
                 writeJsonError(httpRes, SC_BAD_REQUEST, objectMapper.convertValue(map, JsonNode.class));
             } else {
@@ -195,7 +199,7 @@ public class MatchServlet extends GraphHopperServlet {
                 matchResult.put("original_distance", matchRsp.getGpxEntriesLength());
                 matchResult.put("original_time", matchRsp.getGpxEntriesMillis());
                 map.put("map_matching", matchResult);
-                map.put("points" , matchGHRsp.getPoints().toGeoJson());
+                map.put("encodedPolyline" , OnlinePolylineEncoder.pointsToPoly(matchGHRsp.getPoints().toGeoJson()));
 
                 if (enableTraversalKeys) {
                     // encode edges as traversal keys which includes orientation
