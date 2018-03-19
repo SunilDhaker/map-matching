@@ -136,7 +136,7 @@ public class OnlinePolylineEncoder {
 
     for (Double[] point : points){
 
-      pl = extendPolyline(pl,last[0],last[1], point[0],point[1]);
+      pl = extendPolyline(pl,last[1],last[0], point[1],point[0]);
       last = point;
     }
 
