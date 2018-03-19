@@ -46,7 +46,11 @@
             <version>${log4j.version}</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20180130</version>
+        </dependency>
         <!-- for integration tests of service --> 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>

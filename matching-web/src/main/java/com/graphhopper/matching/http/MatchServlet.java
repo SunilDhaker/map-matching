@@ -40,6 +40,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import static com.graphhopper.util.Parameters.DETAILS.PATH_DETAILS;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -65,7 +68,7 @@ public class MatchServlet extends GraphHopperServlet {
 
     @Override
     public void doPost(HttpServletRequest httpReq, HttpServletResponse httpRes)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         String infoStr = httpReq.getRemoteAddr() + " " + httpReq.getLocale();
         String inType = "gpx";
@@ -79,15 +82,34 @@ public class MatchServlet extends GraphHopperServlet {
         PathWrapper matchGHRsp = new PathWrapper();
         final String outType = getParam(httpReq, "type", "json");
         GPXFile gpxFile = new GPXFile();
+        ArrayList<GPXEntry> list= new ArrayList<>();
         if (inType.equals("gpx")) {
             try {
                 gpxFile = parseGPX(httpReq);
+                list = new ArrayList<>(gpxFile.getEntries());
             } catch (Exception ex) {
                 matchGHRsp.addError(ex);
             }
-        } else {
+        } else if(inType.equals("json")) {
+
+            String jsonString = IOUtils.toString(httpReq.getInputStream());
+
+            JSONArray jp = new JSONArray(jsonString);
+
+
+            for(int i = 0 ; i < jp.length() ; i++ ){
+
+                JSONObject jo = jp.getJSONObject(i);
+
+                GPXEntry gpx = new GPXEntry(jo.getDouble("latitude") , jo.getDouble("longitude") , jo.getLong("timestamp"));
+                list.add(gpx);
+            }
+
+
+        }else{
             matchGHRsp.addError(new IllegalArgumentException("Input type not supported " + inType + ", Content-Type:" + contentType));
         }
+
 
         boolean writeGPX = GPX_FORMAT.equals(outType);
         boolean pointsEncoded = getBooleanParam(httpReq, "points_encoded", true);
@@ -110,23 +132,23 @@ public class MatchServlet extends GraphHopperServlet {
         if (!matchGHRsp.hasErrors()) {
             try {
                 AlgorithmOptions opts = AlgorithmOptions.start()
-                        .traversalMode(hopper.getTraversalMode())
-                        .maxVisitedNodes(maxVisitedNodes)
-                        .hints(new HintsMap().put("vehicle", vehicle))
-                        .build();
+                    .traversalMode(hopper.getTraversalMode())
+                    .maxVisitedNodes(maxVisitedNodes)
+                    .hints(new HintsMap().put("vehicle", vehicle))
+                    .build();
                 MapMatching matching = new MapMatching(hopper, opts);
                 matching.setMeasurementErrorSigma(gpsAccuracy);
-                matchRsp = matching.doWork(gpxFile.getEntries());
+                matchRsp = matching.doWork(list);
 
                 // fill GHResponse for identical structure            
                 Path path = matching.calcPath(matchRsp);
                 Translation tr = trMap.getWithFallBack(locale);
                 DouglasPeucker peucker = new DouglasPeucker().setMaxDistance(wayPointMaxDistance);
                 PathMerger pathMerger = new PathMerger().
-                        setEnableInstructions(enableInstructions).
-                        setPathDetailsBuilders(hopper.getPathDetailsBuilderFactory(), pathDetails).
-                        setDouglasPeucker(peucker).
-                        setSimplifyResponse(wayPointMaxDistance > 0);
+                    setEnableInstructions(enableInstructions).
+                    setPathDetailsBuilders(hopper.getPathDetailsBuilderFactory(), pathDetails).
+                    setDouglasPeucker(peucker).
+                    setSimplifyResponse(wayPointMaxDistance > 0);
                 pathMerger.doWork(matchGHRsp, Collections.singletonList(path), tr);
 
             } catch (Exception ex) {
@@ -157,7 +179,7 @@ public class MatchServlet extends GraphHopperServlet {
             GHResponse rsp = new GHResponse();
             rsp.add(matchGHRsp);
             Map<String, Object> map = routeSerializer.toJSON(rsp, true, pointsEncoded,
-                    enableElevation, enableInstructions);
+                enableElevation, enableInstructions);
 
             if (rsp.hasErrors()) {
                 writeJsonError(httpRes, SC_BAD_REQUEST, objectMapper.convertValue(map, JsonNode.class));
