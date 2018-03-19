@@ -28,6 +28,7 @@ import com.graphhopper.matching.GPXFile;
 import com.graphhopper.matching.MapMatching;
 import com.graphhopper.matching.MatchResult;
 import com.graphhopper.matching.OnlinePolylineEncoder;
+import com.graphhopper.matching.PolylineDecoder;
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.Path;
 import com.graphhopper.routing.util.HintsMap;
@@ -81,7 +82,7 @@ public class MatchServlet extends GraphHopperServlet {
             inType = "json";
         } else if (contentType.contains("text/plain")) {
             System.out.println("in type textPlain");
-            inType = "json";
+            inType = "text";
         }
 
         PathWrapper matchGHRsp = new PathWrapper();
@@ -110,6 +111,12 @@ public class MatchServlet extends GraphHopperServlet {
                 list.add(gpx);
             }
 
+
+        }else if(inType.equals("text")) {
+
+            String string = IOUtils.toString(httpReq.getInputStream());
+
+            list = new ArrayList<>(new PolylineDecoder().decode(string));
 
         }else{
             matchGHRsp.addError(new IllegalArgumentException("Input type not supported " + inType + ", Content-Type:" + contentType));
