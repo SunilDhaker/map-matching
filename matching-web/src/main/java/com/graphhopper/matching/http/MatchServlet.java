@@ -116,7 +116,7 @@ public class MatchServlet extends GraphHopperServlet {
 
             String string = IOUtils.toString(httpReq.getInputStream());
 
-            list = new ArrayList<>(new PolylineDecoder().decode(string));
+            list = new ArrayList<>(new PolylineDecoder().decodeTA(string));
 
         }else{
             matchGHRsp.addError(new IllegalArgumentException("Input type not supported " + inType + ", Content-Type:" + contentType));

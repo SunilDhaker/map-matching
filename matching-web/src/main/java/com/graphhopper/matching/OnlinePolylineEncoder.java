@@ -95,32 +95,6 @@ public class OnlinePolylineEncoder {
 
 
 
-
-  /**
-   * Merge two given polyline
-   * * @return
-   */
-  public static  String mergePolylines(List<GPXEntry> points){
-
-
-
-
-    String pl = "";
-
-    GPXEntry last = new GPXEntry(0 , 0, 0);
-
-    for (GPXEntry point : points){
-
-      pl = extendPolyline(pl,last.lat,last.lon, point.getLat(),point.getLon());
-
-     last = point;
-
-    }
-
-    return pl;
-  }
-
-
   /**
    * Merge two given polyline
    * * @return
